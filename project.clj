@@ -1,7 +1,11 @@
-(defproject com.ostronom/cljs-chunk-uploader "0.0.1"
+(defproject org.clojars.ostronom/cljs-uploader "0.0.1"
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
                  [org.clojure/core.async "0.2.374"]]
+  :description "(tiny) ClojureScript chunked/resumable upload library"
+  :license "MIT"
+  :url "https://github.com/ostronom/cljs-uploader"
+
   :source-paths ["src/main"]
   :clean-targets ^{:protect false} ["resources/out"]
   :profiles {:dev {:plugins [[lein-ancient "0.6.8"]
