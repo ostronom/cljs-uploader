@@ -9,6 +9,9 @@ if blob slicing isn't supported by user's browser.
 
 ## Usage
 
+[![Clojars Project](https://img.shields.io/clojars/v/org.clojars.ostronom/cljs-uploader.svg)](https://clojars.org/org.clojars.ostronom/cljs-uploader)
+
+
 ```
 (ns myns.files
   (:require-macros [cljs.core.async.macros :refer [go-loop]])
