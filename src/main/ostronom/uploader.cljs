@@ -5,12 +5,17 @@
   (:require
    [goog.events :as ge]
    [goog.net.EventType :as ET]
+   [ajax.core :refer [ajax-request raw-response-format]]
    [cljs.core.async :refer [<! >! chan close! put! timeout mix admix]]))
 
 (defprotocol IUploader
   (upload
     [u target file form-data]
-    [u target file form-data file-name]))
+    [u target file form-data file-name]
+    "Starts upload of `file` (of type `File` from HTMLForm) to `target` url
+    along with additional `form-data` dict. Additional file-name could be
+    supplied.
+    "))
 
 (def html5supported?
   (not (or (undefined? js/File)
@@ -38,8 +43,8 @@
 (defn notify-progress [ch loaded total]
   (put! ch [:progress {:total total :loaded loaded}]))
 
-(defn notify-error [ch]
-  (put! ch [:error])
+(defn notify-error [ch err]
+  (put! ch [:error err])
   (close! ch))
 
 (deftype ClassicUploader [file-field]
@@ -54,9 +59,12 @@
       (doto (goog.net.XhrIo.)
         (.setProgressEventsEnabled true)
         (ge/listen ET/UPLOAD_PROGRESS #(notify-progress res (.-loaded %) (.-total %)))
-        (ge/listen ET/ERROR #(notify-error res))
-        (ge/listen ET/COMPLETE #(notify-completion res))
-        (.send target "POST" params #js {}))
+        (ge/listen ET/COMPLETE #(let [target (.-target %)]
+          (if (.isSuccess target)
+            (notify-error res (.getLastError target))
+            (notify-completion res))
+          (.dispose target)))
+        (.send target "POST" params))
       res)))
 
 (deftype ChunkedUploader
@@ -97,10 +105,10 @@
                (<! (timeout (timeout-fn retry)))
                (send-chunk offset)
                (recur offset (inc retry)))
-             (notify-error res))
+             (notify-error res props))
 
             :progress
-            (let [{:keys [total loaded]} props]
+            (let [{:keys [loaded]} props]
               (notify-progress res (+ offset loaded) total)
               (recur offset retry))
 
