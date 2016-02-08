@@ -12,7 +12,7 @@ if blob slicing isn't supported by user's browser.
 [![Clojars Project](https://img.shields.io/clojars/v/org.clojars.ostronom/cljs-uploader.svg)](https://clojars.org/org.clojars.ostronom/cljs-uploader)
 
 
-```(clojure)
+```clojure
 (ns myns.files
   (:require-macros [cljs.core.async.macros :refer [go-loop]])
   (:require [ostronom.uploader :as up]
@@ -25,14 +25,15 @@ if blob slicing isn't supported by user's browser.
       (when-let [[evt data] (<! ch)]
         (cond evt
           :progress
-          (js/console.log "UPLOADED" (:loaded data) "OUT OF" (:total evt))
+          (do
+            (js/console.log "UPLOADED" (:loaded data) "OUT OF" (:total evt))
+            (recur))
 
           :complete
           (js/console.log "DONE")
 
           :error
-          (js/console.log ":(")))
-        (recur)))))
+          (js/console.log ":(")))))))
 ```
 
 `get-uploader` returns `IUploader` instance with `upload` method with two arities: `[this target file form-data]` and `[u target file form-data file-name]`
